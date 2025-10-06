@@ -1,6 +1,8 @@
 <header>
+{{ 'simple-supply-logo-black.svg' | inline_asset_content | link_to: routes.home_url }}
   <h2 class="header__title">
     {{ shop.name | link_to: routes.root_url }}
+
   </h2>
 
   <div class="header__menu">
