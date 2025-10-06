@@ -6,10 +6,14 @@
 
     {% # Load and preload the critical CSS %}
     {{ 'critical.css' | asset_url | stylesheet_tag: preload: true }}
+    {{ 'base.css' | asset_url | stylesheet_tag }}
+
+    <link rel="preconnect" href="https://cdn.fonts.net">
+    <script type="text/javascript" src="https://cdn.fonts.net/kit/32cd1b0a-d844-4819-a056-c662fb4bd407/32cd1b0a-d844-4819-a056-c662fb4bd407_enhanced.js" async></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.fonts.net/kit/32cd1b0a-d844-4819-a056-c662fb4bd407/32cd1b0a-d844-4819-a056-c662fb4bd407_enhanced.css" />
 
     {% # Social, title, etc. %}
     {% render 'meta-tags' %}
-
     {{ content_for_header }}
   </head>
 
