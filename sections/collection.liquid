@@ -5,6 +5,8 @@
   https://shopify.dev/docs/storefronts/themes/architecture/templates/collection
 {% endcomment %}
 
+<section>
+
 <div>collection image</div>
 
 <h1>{{ collection.title }}</h1>
@@ -43,7 +45,7 @@
     {{ paginate | default_pagination }}
   {% endpaginate %}
 </div>
-
+</section>
 {% stylesheet %}
   .collection-products {
     display: grid;

@@ -48,5 +48,11 @@
     "submit": "Search",
     "no_results_html": "No results found for {{ terms }}",
     "results_for_html": "{{ count }} results found for {{ terms }}"
+  },
+  "newsletter": {
+    "label": "Join the creatively curious",
+    "placeholder": "What's your email?",
+    "button": "Subscribe",
+    "success": "Thanks for joining the cult!"
   }
 }
