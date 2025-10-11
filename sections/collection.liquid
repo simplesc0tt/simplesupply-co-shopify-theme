@@ -5,7 +5,19 @@
   https://shopify.dev/docs/storefronts/themes/architecture/templates/collection
 {% endcomment %}
 
+<div>collection image</div>
+
 <h1>{{ collection.title }}</h1>
+
+<!-- add a list of links to subcollections defined by the parent collection metafield -->
+<div class="subcollections">
+  {% for subcollection in collections %}
+    {% if subcollection.metafields.custom.parent_collection.value.id == collection.id %}
+      {{ subcollection.title | link_to: subcollection.url }}
+    {% endif %}
+  {% endfor %}
+</div>
+
 
 <div class="collection-products">
   {% paginate collection.products by 20 %}
