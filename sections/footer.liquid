@@ -7,9 +7,9 @@
       {% endif %}
 
       <div class="newsletter-form__fields">
-        <label for="newsletter-email" class="newsletter-form__label">
+        <div><label for="newsletter-email" class="newsletter-form__label">
           {{ 'newsletter.label' | t }}
-        </label>
+        </label></div>
         <div class="newsletter-form__input-wrapper">
           <input
             type="email"
@@ -20,9 +20,11 @@
             required
           >
           <input type="hidden" name="contact[tags]" value="newsletter,subscribed-online">
-          <button type="submit" class="newsletter-form__button">
+        </div>
+        <div>
+            <button type="submit" class="newsletter-form__button">
             {{ 'newsletter.button' | t }}
-          </button>
+        </button>
         </div>
       </div>
 
@@ -118,6 +120,11 @@
   }
   .newsletter-form__input-wrapper {
     display: flex;
+    gap: 0.5rem;
+  }
+  .newsletter-form__fields {
+    display: flex;
+    flex-direction: column;
     gap: 0.5rem;
   }
   .newsletter-form__input {
