@@ -1,1 +1,126 @@
--- featured collection content goes here --
+{% doc %}
+  Renders a featured collection with 8 products and a link to view all.
+
+  @param {collection} collection - The collection to feature
+
+  @example
+  {% render 'featured-collection', collection: collections['the-new-now'] %}
+{% enddoc %}
+
+{% if collection != blank %}
+  <div class="featured-collection">
+    <div class="featured-collection__header">
+      <h2>{{ collection.title }}</h2>
+    </div>
+
+    <div class="featured-collection__products">
+      {% for product in collection.products limit: 8 %}
+        <div class="featured-product">
+          {% if product.featured_image %}
+            <a href="{{ product.url }}" class="featured-product__image">
+              {{ product.featured_image | image_url: width: 400, height: 400 | image_tag: alt: product.title }}
+            </a>
+          {% endif %}
+          <div class="featured-product__content">
+            <h3>{{ product.title | link_to: product.url }}</h3>
+            <p class="featured-product__price">{{ product.price | money }}</p>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="featured-collection__footer">
+      <a href="{{ collection.url }}" class="featured-collection__link">
+        View all products
+      </a>
+    </div>
+  </div>
+{% endif %}
+
+{% stylesheet %}
+  .featured-collection {
+    width: 100%;
+    max-width: 1240px;
+    margin: 60px auto;
+  }
+
+  .featured-collection__header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .featured-collection__header h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .featured-collection__products {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-bottom: 40px;
+  }
+
+  .featured-product {
+    text-align: center;
+  }
+
+  .featured-product__image {
+    display: block;
+    margin-bottom: 1rem;
+    overflow: hidden;
+  }
+
+  .featured-product__image img {
+    width: 100%;
+    height: auto;
+    transition: transform 0.3s ease;
+  }
+
+  .featured-product__image:hover img {
+    transform: scale(1.05);
+  }
+
+  .featured-product__content h3 {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .featured-product__content h3 a {
+    text-decoration: none;
+    color: var(--color-foreground);
+  }
+
+  .featured-product__content h3 a:hover {
+    text-decoration: underline;
+  }
+
+  .featured-product__price {
+    font-weight: bold;
+  }
+
+  .featured-collection__footer {
+    text-align: center;
+  }
+
+  .featured-collection__link {
+    display: inline-block;
+    padding: 12px 24px;
+    background-color: var(--color-foreground);
+    color: var(--color-background);
+    text-decoration: none;
+    border-radius: 4px;
+    transition: opacity 0.3s ease;
+  }
+
+  .featured-collection__link:hover {
+    opacity: 0.8;
+  }
+
+  @media (max-width: 768px) {
+    .featured-collection__products {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+  }
+{% endstylesheet %}
