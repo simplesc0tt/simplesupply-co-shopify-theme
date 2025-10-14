@@ -1,5 +1,5 @@
 {% doc %}
-  Renders a featured collection with 8 products and a link to view all.
+  Renders a featured collection with 4 products and a link to view all.
 
   @param {collection} collection - The collection to feature
 
@@ -9,12 +9,15 @@
 
 {% if collection != blank %}
   <div class="featured-collection">
+  <div class="featured-collection-top">
+    <div class="simply">Simply Put</div>
     <div class="featured-collection__header">
-      <h2>{{ collection.title }}</h2>
+      <h2>SIMPLE SUPPLIES<br/>CURIOUS MINDS</h2>
     </div>
+  </div>
 
     <div class="featured-collection__products">
-      {% for product in collection.products limit: 8 %}
+      {% for product in collection.products limit: 4 %}
         <div class="featured-product">
           {% if product.featured_image %}
             <a href="{{ product.url }}" class="featured-product__image">
@@ -31,7 +34,7 @@
 
     <div class="featured-collection__footer">
       <a href="{{ collection.url }}" class="featured-collection__link">
-        View all products
+        Shop {{ collection.title }}
       </a>
     </div>
   </div>
@@ -41,16 +44,35 @@
   .featured-collection {
     width: 100%;
     max-width: 1240px;
-    margin: 60px auto;
+    margin: 0px auto;
+  }
+  .featured-collection-top {
+    display: flex;
+    justify-content: space-between;
+    align-content: stretch;
+  }
+  .simply {
+    text-align: left;
+    font-family: "RingsideCompressed";
+    font-style: normal;
+    font-stretch: extra-condensed;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 40px;
   }
 
   .featured-collection__header {
-    text-align: center;
+    text-align: right;
+
     margin-bottom: 40px;
   }
 
   .featured-collection__header h2 {
-    font-size: 2.5rem;
+    font-family: "KansasCasual";
+    font-style: normal;
+    font-stretch: normal;
+    font-weight: 500;
+    font-size: 65px;
     margin-bottom: 1rem;
   }
 

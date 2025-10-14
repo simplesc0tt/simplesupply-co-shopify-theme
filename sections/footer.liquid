@@ -110,6 +110,7 @@
   .newsletter-form__label {
     display: block;
     margin-bottom: 0.5rem;
+    padding-right: 22px;
     font-weight: bold;
     font-family: "RingsideCompressed";
     font-style: normal;
@@ -133,6 +134,7 @@
     border: none;
     border-radius: var(--style-border-radius-inputs);
     font-family: "KansasCasual";
+    text-color: black;
     font-style: normal;
     font-stretch: normal;
     font-weight: 500;
@@ -140,10 +142,14 @@
     text-align: right;
     background-color: var(--color-background);
   }
+  .newsletter-form__input::placeholder {
+    color: black;
+    padding-right: 12px;
+}
   .newsletter-form__button {
     padding: 0.75rem 1.5rem;
-    background-color: var(--color-foreground);
-    color: var(--color-background);
+    font-family: "KansasCasual";
+    color: black;
     border: none;
     border-radius: var(--style-border-radius-inputs);
     cursor: pointer;
