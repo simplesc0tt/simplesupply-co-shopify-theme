@@ -4,34 +4,193 @@
 
   https://shopify.dev/docs/storefronts/themes/architecture/templates/cart
 {% endcomment %}
-
+<section class="cart-section">
 <h1>{{ 'cart.title' | t }}</h1>
 
 <form action="{{ routes.cart_url }}" method="post">
-  <table>
+  <div class="cart">
     {% for item in cart.items %}
-      <tr>
-        <td>
+      <div class="cart-item">
+        <div class="cart-item-image">
           {% render 'image', image: item.image, url: item.url %}
-        </td>
-        <td>
-          <p>{{ item.product.title }}</p>
+        </div>
+        <div class="cart-item-details">
+          <p class="cart-item-title">{{ item.product.title }}</p>
+          {% if item.variant.title != 'Default Title' %}
+            <p class="cart-item-variant">{{ item.variant.title }}</p>
+          {% endif %}
+          <p class="cart-item-price">{{ item.price | money }} each</p>
           {{ 'cart.remove' | t | link_to: item.url_to_remove }}
-        </td>
-        <td>
+        </div>
+        <div class="cart-item-actions">
           <input type="text" name="updates[]" value="{{ item.quantity }}">
           <input type="submit" value="{{ 'cart.update' | t }}">
-        </td>
-      </tr>
+        </div>
+        <div class="cart-item-subtotal">
+          <p class="cart-item-line-total">{{ item.line_price | money }}</p>
+        </div>
+      </div>
     {% endfor %}
-  </table>
+  </div>
 
-  <input type="submit" name="checkout" value="{{ 'cart.checkout' | t }}">
+  <div class="cart-summary">
+    <div class="cart-total">
+      <span class="cart-total-label">Total Awesomeness:</span>
+      <span class="cart-total-price">{{ cart.total_price | money }}</span>
+    </div>
+  </div>
+
+  <input type="submit" id="checkout" name="checkout" value="{{ 'cart.checkout' | t }}">
 </form>
 
+<script>
+  (function() {
+    const checkout = document.getElementById('checkout');
+    if (checkout) {
+      const defaultValue = checkout.value;
+      checkout.addEventListener('mouseenter', function() {
+        this.value = defaultValue + ' →';
+      });
+      checkout.addEventListener('mouseleave', function() {
+        this.value = defaultValue;
+      });
+    }
+  })();
+</script>
+</section>
 {% schema %}
 {
   "name": "t:general.cart",
   "settings": []
 }
 {% endschema %}
+{% stylesheet %}
+  section.cart-section {
+    margin-top: 20px;
+    border-top: 1px solid var(--color-border);
+  }
+  .cart-section h1 {
+    font-size: 48px;
+    font-family: var(--font-secondary--family);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .cart {
+    padding: 10px;
+  }
+  .cart-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px;
+  }
+  .cart-item-details {
+    padding: 40px;
+    flex: 1;
+  }
+  .cart-item-variant {
+    font-size: 14px;
+    color: #666;
+    margin: 5px 0;
+  }
+  .cart-item-price {
+    font-size: 14px;
+    margin: 5px 0;
+  }
+  .cart-item-details a {
+    color: var(--color-text);
+    text-decoration: underline;
+    font-size: 14px;
+    font-family: var(--font-secondary--family);
+    text-transform: uppercase;
+    font-weight: bold;
+    margin-right: 10px;
+  }
+  .cart-item-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 20px;
+  }
+  .cart-item-subtotal {
+    padding: 20px;
+    min-width: 120px;
+    text-align: right;
+  }
+  .cart-item-line-total {
+    font-size: 18px;
+    font-weight: bold;
+    font-family: var(--font-secondary--family);
+  }
+  .cart-item-actions input {
+    width: 50px;
+    height: 60px;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    text-align: center;
+    font-size: 36px;
+  }
+  .cart-item-actions input[type="submit"] {
+    width: 250px;
+    font-size: 16px;
+    background-color: var(--color-primary);
+    color: var(--color-text);
+    border: none;
+    border-radius: 4px;
+    padding: 10px 20px;
+    cursor: pointer;
+  }
+  .cart-item-image {
+    width: 150px;
+    height: 150px;
+    background-color: var(--color-card);
+    object-fit: cover;
+  }
+  .cart-item-title {
+    font-size: 18px;
+    font-family: var(--font-secondary--family);
+    text-transform: uppercase;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  .cart-summary {
+    border-top: 1px solid var(--color-border);
+    padding: 20px;
+    margin-top: 20px;
+  }
+  .cart-total {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 20px;
+    font-size: 24px;
+    font-family: var(--font-secondary--family);
+    text-transform: uppercase;
+    font-weight: bold;
+  }
+  .cart-total-label {
+    font-size: 24px;
+  }
+  .cart-total-price {
+    font-size: 32px;
+  }
+  #checkout {
+    width: 100%;
+    font-family: var(--font-secondary--family);
+    text-transform: uppercase;
+    font-size: 24px;
+    background-color: var(--color-primary);
+    color: var(--color-text);
+    border-top: 1px solid var(--color-border);
+    border-radius: 0px;
+    padding: 10px 20px;
+    cursor: pointer;
+  }
+  #checkout:hover {
+    background-color: var(--color-primary--hover);
+    color: white !important;
+  }
+{% endstylesheet %}

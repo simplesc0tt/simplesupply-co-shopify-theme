@@ -1,49 +1,296 @@
 {% comment %}
-  This section is used in the product template to render product page with
-  media, content, and add-to-cart form.
-
-  https://shopify.dev/docs/storefronts/themes/architecture/templates/product
+  Product page with featured image at top, then two-column layout.
+  Left: Additional scrolling images
+  Right: Sticky product info
 {% endcomment %}
 
-<div class="product-images">
-  {% for image in product.images %}
-    {% render 'image', class: 'product-image', image: image %}
-  {% endfor %}
+<div class="product-featured-image">
+  {% if product.images.first %}
+    {{ product.images.first | image_url: width: 1400 | image_tag }}
+    {% comment %}Find which variant this featured image belongs to{% endcomment %}
+    {% assign featured_variant_name = '' %}
+    {% for variant in product.variants %}
+      {% if variant.featured_image.id == product.images.first.id %}
+        {% assign featured_variant_name = variant.title %}
+        {% break %}
+      {% endif %}
+    {% endfor %}
+
+    {% if featured_variant_name != blank %}
+      <div class="product-image__label">{{ featured_variant_name }}</div>
+    {% endif %}
+  {% endif %}
 </div>
 
-<div class="product-info">
-  <h1>{{ product.title }}</h1>
-  <p>{{ product.price | money }}</p>
-  <p>{{ product.description }}</p>
-</div>
-
-<div class="product-form">
-  {% form 'product', product %}
-    {% assign current_variant = product.selected_or_first_available_variant %}
-
-    <select name="id">
-      {% for variant in product.variants %}
-        <option
-          value="{{ variant.id }}"
-          {% if variant == current_variant %}
-            selected="selected"
+<div class="product-page">
+  <div class="product-page__images">
+    {% for image in product.images %}
+      {% unless forloop.first %}
+        {% comment %} Check if this image belongs to an available variant {% endcomment %}
+        {% assign image_available = false %}
+        {% assign variant_name = '' %}
+        {% for variant in product.variants %}
+          {% if variant.featured_image.id == image.id %}
+            {% assign variant_name = variant.title %}
+            {% if variant.available %}
+              {% assign image_available = true %}
+            {% endif %}
+            {% break %}
           {% endif %}
-        >
-          {{ variant.title }} - {{ variant.price | money }}
-        </option>
-      {% endfor %}
-    </select>
+        {% endfor %}
 
-    <input type="text" name="quantity" min="1" value="1">
+        {% if image_available %}
+          <div class="product-image">
+            {{ image | image_url: width: 800 | image_tag }}
+            <div class="product-image__label">
+              {{ variant_name }}
+            </div>
+          </div>
+        {% endif %}
+      {% endunless %}
+    {% endfor %}
+  </div>
 
-    <input type="submit" value="Add to cart">
-    {{ form | payment_button }}
-  {% endform %}
+  <div class="product-page__info">
+    <div class="product-info-sticky">
+      <h2 class="product-title">{{ product.title }}</h2>
+
+      <div class="product-form">
+        {% form 'product', product %}
+          {% assign current_variant = product.selected_or_first_available_variant %}
+
+          {% if product.variants.size > 1 %}
+            <div class="product-variants">
+              <select name="id" class="product-variant-select">
+                {% for variant in product.variants %}
+                  {% if variant.available %}
+                    <option
+                      value="{{ variant.id }}"
+                      {% if variant == current_variant %}selected="selected"{% endif %}
+                    >
+                      {{ variant.title }} - {{ variant.price | money }}
+                    </option>
+                  {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+          {% else %}
+            <input type="hidden" name="id" value="{{ current_variant.id }}">
+          {% endif %}
+
+          <!--<div class="product-quantity">
+            <label for="quantity">Quantity</label>
+            <input type="number" name="quantity" id="quantity" min="1" value="1" class="quantity-input">
+          </div>-->
+
+          <div class="product-price">{{ current_variant.price | money }}</div>
+
+          <button type="submit" class="add-to-cart-button" {% unless current_variant.available %}disabled{% endunless %}>
+            {% if current_variant.available %}
+              Add to Cart
+            {% else %}
+              Sold Out
+            {% endif %}
+          </button>
+
+
+        {% endform %}
+      </div>
+
+      <div class="product-description">
+        {{ product.description }}
+      </div>
+
+      <div class="product-meta">
+        <div class="product-vendor">
+          <a href="{{ product.vendor | url_for_vendor }}">{{ product.vendor | upcase }}</a>
+        </div>
+      </div>
+
+
+    </div>
+  </div>
 </div>
+
+{% stylesheet %}
+  .product-featured-image {
+    position: relative;
+    width: 100%;
+    max-width: 1240px;
+    margin: 0 auto 2px auto;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    max-height: 70vh;
+  }
+
+  .product-featured-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    padding-top: 10px;
+
+  }
+
+  .product-page {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    max-width: 1240px;
+    margin: 0 auto;
+  }
+
+  .product-page__images {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .product-image {
+    position: relative;
+    width: 100%;
+    background: #f5f5f5;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+  }
+
+  .product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .product-image__label {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 5px 12px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: bold;
+    border: 1px solid #000;
+  }
+
+  .product-page__info {
+    position: relative;
+  }
+
+  .product-info-sticky {
+    position: sticky;
+    top: 0;
+    padding: 150px 100px 100px 100px;
+    background-color: #fff;
+    min-height: 100vh;
+  }
+
+  .product-title {
+    font-size: 2rem;
+    line-height: 1;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin: 0 0 0.5rem 0;
+  }
+
+  .product-description {
+    font-size: 0.875rem;
+    line-height: 1.6;
+    margin: 2rem 0;
+  }
+  .product-description p {
+    margin: 10px 0;
+  }
+
+  .product-meta {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+    color: #666;
+    line-height: 1.8;
+  }
+
+  .product-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .product-variant-select,
+  .quantity-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #000;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+  }
+
+  .product-quantity {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .product-quantity label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+  }
+
+  .product-price {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0.5rem 0 1.5rem 0;
+  }
+
+  .add-to-cart-button {
+    color: #000;
+    width: 100%;
+    background: none;
+    border-top: 1px solid #000;
+    border-bottom: 1px solid #000;
+    border-left: none;
+    border-right: none;
+    font-family: var(--font-primary--family);
+    font-style: normal;
+    font-stretch: normal;
+    font-weight: 400;
+    font-size: 1rem;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    padding: 10px 0px;
+  }
+
+  .add-to-cart-button:hover:not(:disabled) {
+    opacity: 0.8;
+  }
+
+  .add-to-cart-button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+
+  .shopify-payment-button {
+    margin-top: 0.5rem;
+  }
+
+  @media (max-width: 768px) {
+    .product-page {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .product-info-sticky {
+      position: static;
+    }
+
+    .product-featured-image {
+      aspect-ratio: 1 / 1;
+    }
+  }
+{% endstylesheet %}
 
 {% schema %}
 {
-  "name": "t:general.product",
+  "name": "Product",
   "settings": [],
   "disabled_on": {
     "groups": ["header", "footer"]

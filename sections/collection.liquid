@@ -5,51 +5,165 @@
   https://shopify.dev/docs/storefronts/themes/architecture/templates/collection
 {% endcomment %}
 
-<section>
 
-<div>collection image</div>
+<section class="collection">
+<div class="collection-header-image">
+  {% if collection.image %}
+    {{ collection.image | image_url: width: 1240 | image_tag: alt: collection.title }}
+  {% endif %}
+</div>
 
 <h1>{{ collection.title }}</h1>
+<p>{{ collection.description }}</p>
 
 <!-- add a list of links to subcollections defined by the parent collection metafield -->
-<div class="subcollections">
-  {% for subcollection in collections %}
-    {% if subcollection.metafields.custom.parent_collection.value.id == collection.id %}
-      {{ subcollection.title | link_to: subcollection.url }}
-    {% endif %}
-  {% endfor %}
-</div>
+{% unless collection.handle == 'vendors' %}
+  <div class="subcollections">
+    {% for subcollection in collections %}
+      {% if subcollection.metafields.custom.parent_collection.value.id == collection.id %}
+        {{ subcollection.title | link_to: subcollection.url }}
+      {% endif %}
+    {% endfor %}
+  </div>
+{% endunless %}
 
 
 <div class="collection-products">
   {% paginate collection.products by 20 %}
     {% for product in collection.products %}
-      <div class="collection-product">
+      <div class="product-card">
         {% if product.featured_image %}
-          {% render 'image',
-            class: 'collection-product__image',
-            image: product.featured_image,
-            url: product.url,
-            width: 400,
-            height: 400,
-            crop: 'center'
-          %}
+          <a href="{{ product.url }}" class="product-card__image">
+            {{ product.featured_image | image_url: width: 400, height: 400 | image_tag: alt: product.title }}
+          </a>
+        {% else %}
+          <a href="{{ product.url }}" class="product-card__image product-card__image--placeholder">
+            <div class="product-card__placeholder"></div>
+          </a>
         {% endif %}
-        <div class="collection-product__content">
-          <p>{{ product.title | escape | link_to: product.url }}</p>
-          <p>{{ product.price | money }}</p>
+        <div class="product-card__content">
+          <h3>{{ product.title | link_to: product.url }}</h3>
+          <p class="product-card__price">{{ product.price | money }}</p>
         </div>
       </div>
     {% endfor %}
 
-    {{ paginate | default_pagination }}
+    <div class="pagination-wrapper">
+      {{ paginate | default_pagination }}
+    </div>
   {% endpaginate %}
 </div>
 </section>
 {% stylesheet %}
+  section .collection {
+    padding: 0px;
+  }
+  .collection-header-image {
+    width: 100%;
+    max-width: 1240px;
+    height: 60vh;
+    margin: 20px auto 0px auto;
+    overflow: hidden;
+    background: #f5f5f5;
+  }
+
+  .collection-header-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .collection h1 {
+    font-size: 4rem;
+    margin: 2rem auto 0 auto;
+  }
+  .collection p {
+    font-size: 1rem;
+    margin: 0 auto 2rem auto;
+  }
   .collection-products {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+    width: 100%;
+    max-width: 1240px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 1024px) {
+    .collection-products {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .collection-products {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+  }
+
+  .product-card {
+    text-align: center;
+  }
+
+  .product-card__image {
+    display: block;
+    overflow: hidden;
+    aspect-ratio: 1 / 1;
+  }
+
+  .product-card__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .product-card__placeholder {
+    width: 100%;
+    height: 100%;
+    background: #ffffff;
+    border-bottom: 1px solid #e5e5e5;
+  }
+
+  .product-card__image:hover img {
+    transform: scale(1.05);
+  }
+
+  .product-card__content {
+    text-align: left;
+    padding: 15px;
+    background-color: #fff;
+    min-height: 100px;
+  }
+
+  .product-card__content h3 {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .product-card__content h3 a {
+    text-decoration: none;
+    color: var(--color-foreground);
+    font-family: "RingsideCompressed";
+    font-style: normal;
+    font-stretch: extra-condensed;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .product-card__content h3 a:hover {
+    text-decoration: underline;
+  }
+
+  .product-card__price {
+    font-weight: bold;
+  }
+
+  .pagination-wrapper {
+    grid-column: 1 / -1;
+    text-align: center;
+    margin-top: 2rem;
   }
 {% endstylesheet %}
 

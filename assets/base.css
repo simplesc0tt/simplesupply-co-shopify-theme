@@ -19,3 +19,8 @@ h2 {
     font-weight: 700;
     text-transform: uppercase;
 }
+
+input {
+    background-color: var(--color-background);
+    border: none;
+}

@@ -7,22 +7,17 @@
     </div>
 </section>
 
-<section>
+<section class="feature-collection">
     {% render 'featured-collection', collection: collections['the-new-now'] %}
 </section>
 
 <section>
-
     {% include 'featured-product' %}
 </section>
 
-<section>
-    <div>Categories</div>
-    {% for collection in collections %}
-        {% unless collection.metafields.custom.parent_collection %}
-            {{ collection.title | link_to: collection.url }}
-        {% endunless %}
-    {% endfor %}
+<section class="categories-section">
+    {% include 'collection-config' %}
+    {% render 'sorted-parent-collections', collection_order: collection_order, layout: 'cards' %}
 </section>
 {% stylesheet %}
 
@@ -31,11 +26,15 @@ section {
     margin:0px auto;
     max-width: 1240px;
     border-bottom: 1px solid #666666;
-    padding: 40px 0px;
 }
 
 section.feature-section {
-    padding-top: 15px !important;
+    padding-top: 20px;
+    padding-bottom: 40px;
+}
+
+section.feature-collection {
+    padding: 40px 0px;
 }
 
 .home-page-feature {
@@ -60,5 +59,18 @@ section.feature-section {
     padding: 30px 30px 0px 30px;
     text-transform: uppercase;
     color: #666666;
+    line-height: 1.65em;
+}
+
+/* Categories Section */
+.categories-section {
+    padding: 40px 0;
+}
+
+.categories-title {
+    font-size: 2rem;
+    text-align: center;
+    margin-bottom: 40px;
+    text-transform: uppercase;
 }
 {% endstylesheet %}

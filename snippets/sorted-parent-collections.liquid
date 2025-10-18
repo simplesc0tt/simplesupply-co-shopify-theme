@@ -1,0 +1,207 @@
+{% doc %}
+  Renders parent collections as cards in a specified order.
+
+  @param {string} collection_order - Comma-separated list of collection handles in desired order
+  @param {string} [layout] - 'cards' or 'list' (default: 'list')
+
+  @example
+  {% render 'sorted-parent-collections', collection_order: 'art-studio,office,paper-goods', layout: 'cards' %}
+{% enddoc %}
+
+{% comment %}
+  If collection_order is provided, output collections in that order.
+  Otherwise, output all parent collections in default order.
+{% endcomment %}
+
+{% if layout == 'cards' %}
+  <div class="collection-cards">
+    {% if collection_order != blank %}
+      {% assign ordered_handles = collection_order | split: ',' %}
+      {% for handle in ordered_handles %}
+        {% assign handle = handle | strip %}
+        {% assign collection = collections[handle] %}
+        {% assign parent_collection = collection.metafields.custom.parent_collection %}
+        {% assign show_in_nav = collection.metafields.custom.show_in_navigation %}
+
+        {% if collection and parent_collection == blank and show_in_nav != false %}
+          <a href="{{ collection.url }}" class="collection-card">
+            {% if collection.image %}
+              <div class="collection-card__image">
+                {{ collection.image | image_url: width: 600, height: 600 | image_tag: alt: collection.title }}
+              </div>
+            {% endif %}
+            <div class="collection-card__content">
+              <h3 class="collection-card__title">{{ collection.title }}</h3>
+              <!--{% if collection.description != blank %}
+                <p class="collection-card__description">{{ collection.description | strip_html | truncate: 50 }}</p>
+              {% endif %}-->
+            </div>
+          </a>
+        {% endif %}
+      {% endfor %}
+
+      {% comment %}Output any parent collections not in the ordered list{% endcomment %}
+      {% for collection in collections %}
+        {% assign parent_collection = collection.metafields.custom.parent_collection %}
+        {% assign show_in_nav = collection.metafields.custom.show_in_navigation %}
+
+        {% if parent_collection == blank and show_in_nav != false %}
+          {% unless ordered_handles contains collection.handle %}
+            <a href="{{ collection.url }}" class="collection-card">
+              {% if collection.image %}
+                <div class="collection-card__image">
+                  {{ collection.image | image_url: width: 600, height: 600 | image_tag: alt: collection.title }}
+                </div>
+              {% endif %}
+              <div class="collection-card__content">
+                <h3 class="collection-card__title">{{ collection.title }}</h3>
+                {% if collection.description != blank %}
+                  <p class="collection-card__description">{{ collection.description | strip_html | truncate: 50 }}</p>
+                {% endif %}
+              </div>
+            </a>
+          {% endunless %}
+        {% endif %}
+      {% endfor %}
+    {% else %}
+      {% comment %}No order specified, output all parent collections{% endcomment %}
+      {% for collection in collections %}
+        {% assign parent_collection = collection.metafields.custom.parent_collection %}
+        {% assign show_in_nav = collection.metafields.custom.show_in_navigation %}
+
+        {% if parent_collection == blank and show_in_nav != false %}
+          <a href="{{ collection.url }}" class="collection-card">
+            {% if collection.image %}
+              <div class="collection-card__image">
+                {{ collection.image | image_url: width: 600, height: 600 | image_tag: alt: collection.title }}
+              </div>
+            {% endif %}
+            <div class="collection-card__content">
+              <h3 class="collection-card__title">{{ collection.title }}</h3>
+              {% if collection.description != blank %}
+                <p class="collection-card__description">{{ collection.description | strip_html | truncate: 50 }}</p>
+              {% endif %}
+            </div>
+          </a>
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  </div>
+{% else %}
+  {% comment %}List layout (original behavior){% endcomment %}
+  {% if collection_order != blank %}
+    {% assign ordered_handles = collection_order | split: ',' %}
+    {% for handle in ordered_handles %}
+      {% assign handle = handle | strip %}
+      {% assign collection = collections[handle] %}
+      {% assign parent_collection = collection.metafields.custom.parent_collection %}
+      {% assign show_in_nav = collection.metafields.custom.show_in_navigation %}
+
+      {% if collection and parent_collection == blank and show_in_nav != false %}
+        {{ collection.title | link_to: collection.url }}
+      {% endif %}
+    {% endfor %}
+
+    {% comment %}Output any parent collections not in the ordered list{% endcomment %}
+    {% for collection in collections %}
+      {% assign parent_collection = collection.metafields.custom.parent_collection %}
+      {% assign show_in_nav = collection.metafields.custom.show_in_navigation %}
+
+      {% if parent_collection == blank and show_in_nav != false %}
+        {% unless ordered_handles contains collection.handle %}
+          {{ collection.title | link_to: collection.url }}
+        {% endunless %}
+      {% endif %}
+    {% endfor %}
+  {% else %}
+    {% comment %}No order specified, output all parent collections{% endcomment %}
+    {% for collection in collections %}
+      {% assign parent_collection = collection.metafields.custom.parent_collection %}
+      {% assign show_in_nav = collection.metafields.custom.show_in_navigation %}
+
+      {% if parent_collection == blank and show_in_nav != false %}
+        {{ collection.title | link_to: collection.url }}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+{% endif %}
+
+{% stylesheet %}
+  .collection-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 1024px) {
+    .collection-cards {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .collection-card {
+    display: block;
+    text-decoration: none;
+    color: var(--color-foreground);
+    background: white;
+    overflow: hidden;
+    transition: transform 0.2s ease;
+  }
+
+  .collection-card:hover {
+    transform: translateY(-4px);
+  }
+
+  .collection-card__image {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    background: #e5e5e5;
+  }
+
+  .collection-card__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .collection-card__content {
+    padding: 1.5rem;
+    background: white;
+  }
+
+  .collection-card__title {
+    font-size: .85rem;
+    font-weight: bold;
+    margin: 0 0 0.5rem 0;
+    text-transform: uppercase;
+  }
+
+  .collection-card__description {
+    font-size: 0.875rem;
+    margin: 0;
+    color: #666;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 768px) {
+    .collection-cards {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+
+    .collection-card__content {
+      padding: 1rem;
+    }
+
+    .collection-card__title {
+      font-size: 1rem;
+    }
+
+    .collection-card__description {
+      font-size: 0.75rem;
+    }
+  }
+{% endstylesheet %}

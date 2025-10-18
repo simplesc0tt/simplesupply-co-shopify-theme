@@ -29,9 +29,15 @@
     "section": "Section",
     "settings": "Settings",
     "sidebar": "Sidebar",
+    "social_media": "Social Media",
     "text": "Text",
     "theme": "Theme",
     "typography": "Typography"
+  },
+  "sections": {
+    "product_mega_variant": {
+      "name": "Product - Mega Variant"
+    }
   },
   "labels": {
     "alignment": "Alignment",
@@ -71,6 +77,6 @@
       "title": "Title",
       "subtitle": "Subtitle",
       "normal": "Normal text"
-    },
+    }
   }
 }

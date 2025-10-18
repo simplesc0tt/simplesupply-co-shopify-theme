@@ -17,7 +17,7 @@
       {
         "type": "font_picker",
         "id": "type_primary_font",
-        "default": "work_sans_n4",
+        "default": "assistant_n4",
         "label": "t:general.primary"
       }
     ]
@@ -31,15 +31,15 @@
         "label": "t:labels.page_width",
         "options": [
           {
-            "value": "90rem",
-            "label": "t:options.page_width.narrow"
+            "value": "1240",
+            "label": "Standard (1240px)"
           },
           {
-            "value": "110rem",
-            "label": "t:options.page_width.wide"
+            "value": "1440",
+            "label": "Wide (1440px)"
           }
         ],
-        "default": "90rem"
+        "default": "1240"
       },
       {
         "type": "range",
@@ -65,8 +65,26 @@
       {
         "type": "color",
         "id": "foreground_color",
-        "default": "#333333",
+        "default": "#000000",
         "label": "t:labels.foreground"
+      },
+      {
+        "type": "color",
+        "id": "card_color",
+        "default": "#ffffff",
+        "label": "t:labels.card"
+      },
+      {
+        "type": "color",
+        "id": "border_color",
+        "default": "#000",
+        "label": "t:labels.border"
+      },
+      {
+        "type": "color",
+        "id": "primary_color",
+        "default": "#000000",
+        "label": "t:labels.primary"
       },
       {
         "type": "range",

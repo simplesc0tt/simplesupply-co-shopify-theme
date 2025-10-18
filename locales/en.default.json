@@ -54,5 +54,12 @@
     "placeholder": "What's your email?",
     "button": "Subscribe",
     "success": "Thanks for joining the cult!"
+  },
+  "products": {
+    "select_variant": "Select color/variant",
+    "select_color": "Select a color",
+    "see_all_colors": "See all colors",
+    "add_to_cart": "Add to Cart",
+    "sold_out": "Sold Out"
   }
 }

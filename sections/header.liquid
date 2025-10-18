@@ -34,16 +34,39 @@
         </div>
       </div>
       <nav class="nav-overlay__menu">
-        <h2 class="nav-overlay__title">Categories</h2>
         <ul class="nav-overlay__list">
-          {% for collection in collections %}
-            {% unless collection.metafields.custom.parent_collection %}
+          {% include 'collection-config' %}
+          {% assign ordered_handles = collection_order | split: ',' %}
+
+          {% for handle in ordered_handles %}
+            {% assign handle = handle | strip %}
+            {% assign collection = collections[handle] %}
+            {% assign parent_collection = collection.metafields.custom.parent_collection %}
+            {% assign show_in_nav = collection.metafields.custom.show_in_navigation %}
+
+            {% if collection and parent_collection == blank and show_in_nav != false %}
               <li class="nav-overlay__item">
                 <a href="{{ collection.url }}" class="nav-overlay__link">
                   {{ collection.title }}
                 </a>
               </li>
-            {% endunless %}
+            {% endif %}
+          {% endfor %}
+
+          {% comment %}Add any collections not in the ordered list{% endcomment %}
+          {% for collection in collections %}
+            {% assign parent_collection = collection.metafields.custom.parent_collection %}
+            {% assign show_in_nav = collection.metafields.custom.show_in_navigation %}
+
+            {% if parent_collection == blank and show_in_nav != false %}
+              {% unless ordered_handles contains collection.handle %}
+                <li class="nav-overlay__item">
+                  <a href="{{ collection.url }}" class="nav-overlay__link">
+                    {{ collection.title }}
+                  </a>
+                </li>
+              {% endunless %}
+            {% endif %}
           {% endfor %}
         </ul>
       </nav>
@@ -80,7 +103,19 @@
   header a sup {
     position: absolute;
     left: 100%;
+    margin-left: 5px;
     max-width: var(--page-margin);
+    background-color: black;
+    color: white;
+    width: 20px;
+    text-align: center;
+    border-radius: 10px;
+    font-family: "RingsideCompressed";
+    font-style: normal;
+    font-stretch: extra-condensed;
+    font-weight: 700;
+    text-transform: uppercase;
+
   }
   header .menu_icon svg {
     width: 25px;

@@ -34,7 +34,7 @@
 
     <div class="featured-collection__footer">
       <a href="{{ collection.url }}" class="featured-collection__link">
-        Shop {{ collection.title }}
+        -> Shop {{ collection.title }}
       </a>
     </div>
   </div>
@@ -53,7 +53,7 @@
   }
   .simply {
     text-align: left;
-    font-family: "RingsideCompressed";
+    font-family: var(--font-secondary--family);
     font-style: normal;
     font-stretch: extra-condensed;
     font-weight: 700;
@@ -68,7 +68,7 @@
   }
 
   .featured-collection__header h2 {
-    font-family: "KansasCasual";
+    font-family: var(--font-tertiary--family);
     font-style: normal;
     font-stretch: normal;
     font-weight: 500;
@@ -89,32 +89,48 @@
 
   .featured-product__image {
     display: block;
-    margin-bottom: 1rem;
     overflow: hidden;
+    aspect-ratio: 1 / 1;
   }
 
   .featured-product__image img {
     width: 100%;
-    height: auto;
+    height: 100%;
+    object-fit: cover;
     transition: transform 0.3s ease;
   }
 
   .featured-product__image:hover img {
     transform: scale(1.05);
   }
-
+  .featured-product__content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    text-align: left;
+    padding: 15px;
+    background-color: #fff;
+    min-height: 100px;
+  }
   .featured-product__content h3 {
     font-size: 1rem;
     margin-bottom: 0.5rem;
+
   }
 
   .featured-product__content h3 a {
     text-decoration: none;
     color: var(--color-foreground);
+    font-family: var(--font-secondary--family);
+    font-style: normal;
+    font-stretch: extra-condensed;
+    font-weight: 700;
+    text-transform: uppercase;
   }
 
   .featured-product__content h3 a:hover {
     text-decoration: underline;
+
   }
 
   .featured-product__price {
@@ -122,21 +138,19 @@
   }
 
   .featured-collection__footer {
-    text-align: center;
+    text-align: right;
   }
 
   .featured-collection__link {
     display: inline-block;
     padding: 12px 24px;
-    background-color: var(--color-foreground);
-    color: var(--color-background);
+    color: black;
     text-decoration: none;
-    border-radius: 4px;
     transition: opacity 0.3s ease;
   }
 
   .featured-collection__link:hover {
-    opacity: 0.8;
+    text-decoration: underline;
   }
 
   @media (max-width: 768px) {

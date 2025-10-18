@@ -1,0 +1,17 @@
+{% doc %}
+  Central configuration for collection ordering.
+
+  Update the collection_order variable here to change the sort order
+  across the site (navigation, homepage, etc.)
+
+  @example
+  {% render 'collection-config' %}
+  {{ collection_order }}
+{% enddoc %}
+
+{% comment %}
+  Define the order of parent collections by their handles.
+  Separate handles with commas. Collections not listed will appear at the end.
+{% endcomment %}
+
+{% assign collection_order = 'the-new-now,the-desktop,the-art-studio,pads-paper-and-stationary,the-library,the-home-goods,the-wood-shop,on-sale' %}
