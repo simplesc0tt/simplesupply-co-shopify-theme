@@ -1,0 +1,14 @@
+{% doc %}
+  Renders product meta information (vendor, etc).
+
+  @param {product} product - The product object
+
+  @example
+  {% render 'product-meta', product: product %}
+{% enddoc %}
+
+<div class="product-meta">
+  <div class="product-vendor">
+    <a href="{{ product.vendor | url_for_vendor }}">{{ product.vendor | upcase }}</a>
+  </div>
+</div>

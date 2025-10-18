@@ -59,7 +59,15 @@
     "select_variant": "Select color/variant",
     "select_color": "Select a color",
     "see_all_colors": "See all colors",
+    "all_colors": "All Colors",
     "add_to_cart": "Add to Cart",
-    "sold_out": "Sold Out"
+    "quick_add": "Quick Add",
+    "sold_out": "Sold Out",
+    "adding": "Adding...",
+    "added": "Added!",
+    "error": "Error",
+    "max_quantity": "Max Qty",
+    "no_more_stock": "No More Stock",
+    "related_products": "Related Products"
   }
 }

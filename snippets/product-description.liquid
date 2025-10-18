@@ -1,0 +1,23 @@
+{% doc %}
+  Renders product description with read more/less toggle functionality.
+
+  @param {product} product - The product object
+
+  @example
+  {% render 'product-description', product: product %}
+{% enddoc %}
+
+<div class="product-description" id="productDescription">
+  <div class="product-description__preview">
+    {{ product.description | strip_html | truncatewords: 50 }}
+  </div>
+  <div class="product-description__full" style="display: none;">
+    {{ product.description }}
+  </div>
+  {% if product.description.size > 300 %}
+    <button class="product-description__toggle" id="descriptionToggle">
+      <span class="read-more">Read More</span>
+      <span class="read-less" style="display: none;">Read Less</span>
+    </button>
+  {% endif %}
+</div>

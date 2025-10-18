@@ -1,0 +1,43 @@
+{% doc %}
+  JavaScript for product description read more/less toggle functionality.
+  Include this in both product.liquid and product-mega-variant.liquid.
+
+  @example
+  {% render 'product-description-toggle' %}
+{% enddoc %}
+
+{% javascript %}
+  window.initDescriptionToggle = function() {
+    const toggleButton = document.getElementById('descriptionToggle');
+
+    if (toggleButton) {
+      toggleButton.addEventListener('click', function() {
+        const preview = document.querySelector('.product-description__preview');
+        const full = document.querySelector('.product-description__full');
+        const readMore = this.querySelector('.read-more');
+        const readLess = this.querySelector('.read-less');
+
+        if (full.style.display === 'none') {
+          // Show full description
+          preview.style.display = 'none';
+          full.style.display = 'block';
+          readMore.style.display = 'none';
+          readLess.style.display = 'inline';
+        } else {
+          // Show preview
+          preview.style.display = 'block';
+          full.style.display = 'none';
+          readMore.style.display = 'inline';
+          readLess.style.display = 'none';
+        }
+      });
+    }
+  };
+
+  // Auto-initialize if DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', window.initDescriptionToggle);
+  } else {
+    window.initDescriptionToggle();
+  }
+{% endjavascript %}

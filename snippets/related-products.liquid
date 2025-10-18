@@ -1,0 +1,135 @@
+{% doc %}
+  Renders a grid of related products based on the product metafield.
+
+  @param {product} product - The product object
+
+  @example
+  {% render 'related-products', product: product %}
+{% enddoc %}
+
+{% assign related_products = product.metafields.custom.related_products.value %}
+
+{% if related_products and related_products != blank %}
+  <div class="related-products">
+    <h2 class="related-products__title">{{ 'products.related_products' | t }}</h2>
+
+    <div class="related-products__grid">
+      {% for related_product in related_products %}
+        <div class="related-product-card">
+          <a href="{{ related_product.url }}" class="related-product-card__link">
+            {% if related_product.featured_image %}
+              <div class="related-product-card__image">
+                {{ related_product.featured_image | image_url: width: 400 | image_tag: alt: related_product.title }}
+              </div>
+            {% else %}
+              <div class="related-product-card__image related-product-card__image--placeholder">
+                <div class="related-product-card__placeholder"></div>
+              </div>
+            {% endif %}
+
+            <div class="related-product-card__content">
+              <h3 class="related-product-card__title">{{ related_product.title }}</h3>
+              <p class="related-product-card__price">{{ related_product.price | money }}</p>
+            </div>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}
+
+{% stylesheet %}
+  .related-products {
+    max-width: 1240px;
+    margin: 4rem auto 0 auto;
+    padding: 0 20px;
+  }
+
+  .related-products__title {
+    font-size: 2rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  .related-products__grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+  }
+
+  @media (max-width: 1024px) {
+    .related-products__grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .related-products__grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+
+    .related-products__title {
+      font-size: 1.5rem;
+    }
+  }
+
+  .related-product-card {
+    text-align: center;
+  }
+
+  .related-product-card__link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .related-product-card__image {
+    display: block;
+    overflow: hidden;
+    aspect-ratio: 1 / 1;
+    background: #f5f5f5;
+  }
+
+  .related-product-card__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .related-product-card__link:hover .related-product-card__image img {
+    transform: scale(1.05);
+  }
+
+  .related-product-card__placeholder {
+    width: 100%;
+    height: 100%;
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+  }
+
+  .related-product-card__content {
+    text-align: left;
+    padding: 15px;
+    background-color: #fff;
+    min-height: 100px;
+  }
+
+  .related-product-card__title {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    font-family: var(--font-primary--family);
+    font-style: normal;
+    font-stretch: extra-condensed;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .related-product-card__price {
+    font-weight: bold;
+    margin: 0;
+  }
+{% endstylesheet %}

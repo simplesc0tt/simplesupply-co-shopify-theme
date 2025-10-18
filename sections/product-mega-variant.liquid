@@ -38,19 +38,28 @@
       {% unless forloop.first %}
         {% comment %} Find which variant this image belongs to {% endcomment %}
         {% assign image_variant_name = '' %}
+        {% assign image_variant_id = '' %}
+        {% assign image_variant_available = false %}
         {% for variant in product.variants %}
           {% if variant.featured_image.id == image.id %}
             {% assign image_variant_name = variant.title %}
+            {% assign image_variant_id = variant.id %}
+            {% assign image_variant_available = variant.available %}
             {% break %}
           {% endif %}
         {% endfor %}
 
-        <div class="product-image" data-variant-image="{{ image.id }}">
+        <div class="product-image" data-variant-image="{{ image.id }}" data-variant-id="{{ image_variant_id }}">
           {{ image | image_url: width: 800 | image_tag }}
           {% if image_variant_name != blank %}
             <div class="product-image__label">
               {{ image_variant_name }}
             </div>
+            {% if image_variant_available %}
+              <button class="product-image__quick-add" data-variant-id="{{ image_variant_id }}">
+                {{ 'products.quick_add' | t }}
+              </button>
+            {% endif %}
           {% endif %}
         </div>
       {% endunless %}
@@ -67,7 +76,7 @@
 
           {% if product.variants.size > 1 %}
             <div class="product-variants">
-              <label for="variantSelect" class="variant-label">{{ 'products.select_variant' | t }}</label>
+
               <div class="mega-variant-select-wrapper">
                 <select name="id" id="variantSelect" class="mega-variant-select">
                   <option value="" selected class="select-color-option">{{ 'products.select_color' | t }}</option>
@@ -106,18 +115,14 @@
         {% endform %}
       </div>
 
-      <div class="product-description">
-        {{ product.description }}
-      </div>
+      {% render 'product-description', product: product %}
 
-      <div class="product-meta">
-        <div class="product-vendor">
-          <a href="{{ product.vendor | url_for_vendor }}">{{ product.vendor | upcase }}</a>
-        </div>
-      </div>
+      {% render 'product-meta', product: product %}
     </div>
   </div>
 </div>
+
+{% render 'related-products', product: product %}
 
 {% comment %} Store variant data for JavaScript {% endcomment %}
 <script>
@@ -168,6 +173,16 @@
       }{% unless forloop.last %},{% endunless %}
     {% endfor %}
   ];
+
+  // Translation strings for JavaScript
+  window.productTranslations = {
+    quickAdd: "{{ 'products.quick_add' | t }}",
+    adding: "{{ 'products.adding' | t }}",
+    added: "{{ 'products.added' | t }}",
+    error: "{{ 'products.error' | t }}",
+    maxQuantity: "{{ 'products.max_quantity' | t }}",
+    noMoreStock: "{{ 'products.no_more_stock' | t }}"
+  };
 </script>
 
 {% stylesheet %}
@@ -233,6 +248,41 @@
     border: 1px solid #000;
   }
 
+  .product-image__quick-add {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #000;
+    border: 1px solid #000;
+    padding: 5px 12px;
+    font-family: var(--font-primary--family);
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    z-index: 10;
+  }
+
+  .product-image__quick-add:hover:not(:disabled) {
+    background: #000;
+    color: #fff;
+  }
+
+  .product-image__quick-add:disabled {
+    cursor: not-allowed;
+  }
+
+  .product-image__quick-add.loading {
+    background: rgba(255, 255, 255, 0.9);
+  }
+
+  .product-image__quick-add.added {
+    background: #000;
+    color: #fff;
+  }
+
   .product-page__info {
     position: relative;
   }
@@ -253,29 +303,7 @@
     margin: 0 0 0.5rem 0;
   }
 
-  .product-description {
-    font-size: 0.875rem;
-    line-height: 1.6;
-    margin: 2rem 0;
-  }
 
-  .product-description p {
-    margin: 10px 0;
-  }
-
-  .product-meta {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    margin-bottom: 2rem;
-    color: #666;
-    line-height: 1.8;
-  }
-
-  .product-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
 
   .product-variants {
     display: flex;
@@ -326,39 +354,19 @@
     display: none;
   }
 
-  .product-price {
+  .product-page .product-price {
     font-size: 1.5rem;
     font-weight: bold;
-    margin: 0.5rem 0 1.5rem 0;
+    margin: 1.5rem 0 1.5rem 0;
   }
 
-  .add-to-cart-button {
-    color: #000;
-    width: 100%;
-    background: none;
-    border-top: 1px solid #000;
-    border-bottom: 1px solid #000;
-    border-left: none;
-    border-right: none;
-    font-family: var(--font-primary--family);
-    font-style: normal;
-    font-stretch: normal;
-    font-weight: 400;
-    font-size: 1rem;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: opacity 0.2s;
-    padding: 10px 0px;
+  .price-range {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin: 1.5rem 0 1.5rem 0;
   }
 
-  .add-to-cart-button:hover:not(:disabled) {
-    opacity: 0.8;
-  }
 
-  .add-to-cart-button:disabled {
-    background: #ccc;
-    cursor: not-allowed;
-  }
 
   @media (max-width: 768px) {
     .product-page {
@@ -374,10 +382,38 @@
     .product-featured-image {
       aspect-ratio: 1 / 1;
     }
+
+    .product-image__quick-add {
+      right: 10px;
+      padding: 10px 16px;
+      font-size: 0.75rem;
+    }
   }
+
+  {% render 'product-styles' %}
 {% endstylesheet %}
 
+{% render 'product-description-toggle' %}
+
 {% javascript %}
+  // Helper function to update cart count in header
+  function updateCartCount() {
+    fetch('/cart.js')
+      .then(response => response.json())
+      .then(cart => {
+        const cartCountElement = document.getElementById('cart-count');
+        if (cartCountElement) {
+          cartCountElement.textContent = cart.item_count;
+          if (cart.item_count > 0) {
+            cartCountElement.style.display = '';
+          } else {
+            cartCountElement.style.display = 'none';
+          }
+        }
+      })
+      .catch(error => console.error('Error updating cart count:', error));
+  }
+
   class MegaVariantSelector {
     constructor() {
       this.variantSelect = document.getElementById('variantSelect');
@@ -387,6 +423,7 @@
       this.seeAllOption = this.variantSelect?.querySelector('.see-all-option');
       this.selectColorOption = this.variantSelect?.querySelector('.select-color-option');
       this.allProductImages = this.getAllProductImages();
+      this.processingButtons = new Set(); // Track which buttons are currently processing
 
       if (this.variantSelect) {
         this.init();
@@ -525,21 +562,24 @@
       if (variant.featuredImageId) {
         const featuredImage = window.productImages.find(img => img.id === variant.featuredImageId);
         if (featuredImage) {
-          this.renderImage(featuredImage, variant.title);
+          this.renderImage(featuredImage, variant.title, variantId);
         }
       }
 
       // Add metafield images if they exist
       if (variant.metafieldImages && variant.metafieldImages.length > 0) {
         variant.metafieldImages.forEach(image => {
-          this.renderImage(image, variant.title);
+          this.renderImage(image, variant.title, variantId);
         });
       }
     }
 
-    renderImage(image, variantTitle) {
+    renderImage(image, variantTitle, variantId) {
       const imageDiv = document.createElement('div');
       imageDiv.className = 'product-image';
+      if (variantId) {
+        imageDiv.dataset.variantId = variantId;
+      }
 
       const img = document.createElement('img');
       img.src = image.url;
@@ -553,7 +593,291 @@
       imageDiv.appendChild(img);
       imageDiv.appendChild(label);
 
+      // Add quick-add button if variant ID exists and variant is available
+      if (variantId) {
+        const variant = window.productVariants[variantId];
+        if (variant && variant.available) {
+          const quickAddBtn = document.createElement('button');
+          quickAddBtn.className = 'product-image__quick-add';
+          quickAddBtn.dataset.variantId = variantId;
+          quickAddBtn.textContent = window.productTranslations.quickAdd;
+
+          // Attach click handler
+          quickAddBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // Find the ImageQuickAdd instance and call its handler
+            // Or call the handler directly
+            this.handleImageQuickAdd(quickAddBtn);
+          });
+
+          imageDiv.appendChild(quickAddBtn);
+        }
+      }
+
       this.variantImagesContainer.appendChild(imageDiv);
+    }
+
+    async handleImageQuickAdd(button) {
+      const variantId = button.dataset.variantId;
+
+      if (!variantId) {
+        console.error('No variant ID found');
+        return;
+      }
+
+      // Check if this button is already processing a request
+      if (this.processingButtons.has(variantId)) {
+        console.log('[Cart] Request already in progress for variant:', variantId);
+        return;
+      }
+
+      // Mark this button as processing
+      this.processingButtons.add(variantId);
+
+      const originalText = button.textContent;
+      button.disabled = true;
+      button.classList.add('loading');
+      button.textContent = window.productTranslations.adding;
+
+      try {
+        // First, get current cart to check if item already exists
+        const cartResponse = await fetch('/cart.js');
+        const cart = await cartResponse.json();
+
+        // Find if this variant is already in cart
+        const existingItem = cart.items.find(item => item.variant_id === parseInt(variantId));
+
+        let response;
+        if (existingItem) {
+          // Item exists, increment quantity using change endpoint
+          response = await fetch('/cart/change.js', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              id: variantId,
+              quantity: existingItem.quantity + 1
+            })
+          });
+        } else {
+          // Item doesn't exist, add it
+          response = await fetch('/cart/add.js', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              items: [{
+                id: parseInt(variantId),
+                quantity: 1
+              }]
+            })
+          });
+        }
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('[Cart] Failed to add variant:', {
+            variantId,
+            status: response.status,
+            error: errorData
+          });
+          throw new Error(errorData.description || errorData.message || 'Failed to add to cart');
+        }
+
+        const data = await response.json();
+        console.log('[Cart] Successfully added variant:', variantId);
+
+        button.classList.remove('loading');
+        button.classList.add('added');
+        button.textContent = window.productTranslations.added;
+
+        // Update cart count in header
+        updateCartCount();
+
+        document.documentElement.dispatchEvent(new CustomEvent('cart:refresh', {
+          bubbles: true
+        }));
+
+        setTimeout(() => {
+          button.classList.remove('added');
+          button.textContent = originalText;
+          button.disabled = false;
+          // Remove from processing set
+          this.processingButtons.delete(variantId);
+        }, 2000);
+
+      } catch (error) {
+        console.error('[Cart] Error adding variant to cart:', {
+          variantId,
+          error: error.message
+        });
+
+        button.classList.remove('loading');
+
+        // Check for specific error messages
+        const errorMessage = error.message.toLowerCase();
+        if (errorMessage.includes('availability') || errorMessage.includes('stock') || errorMessage.includes('inventory')) {
+          button.textContent = window.productTranslations.noMoreStock;
+        } else if (errorMessage.includes('quantity') || errorMessage.includes('limit') || errorMessage.includes('maximum')) {
+          button.textContent = window.productTranslations.maxQuantity;
+        } else {
+          button.textContent = window.productTranslations.error;
+        }
+
+        setTimeout(() => {
+          button.textContent = originalText;
+          button.disabled = false;
+          // Remove from processing set
+          this.processingButtons.delete(variantId);
+        }, 2000);
+      }
+    }
+  }
+
+  // Quick Add functionality for product images
+  class ImageQuickAdd {
+    constructor() {
+      this.processingButtons = new Set(); // Track which buttons are currently processing
+      this.initQuickAddButtons();
+    }
+
+    initQuickAddButtons() {
+      // Add event listeners to all current quick-add buttons
+      const buttons = document.querySelectorAll('.product-image__quick-add');
+      buttons.forEach(button => {
+        button.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          this.handleQuickAdd(e.currentTarget);
+        });
+      });
+    }
+
+    async handleQuickAdd(button) {
+      const variantId = button.dataset.variantId;
+
+      if (!variantId) {
+        console.error('No variant ID found');
+        return;
+      }
+
+      // Check if this button is already processing a request
+      if (this.processingButtons.has(variantId)) {
+        console.log('[Cart] Request already in progress for variant:', variantId);
+        return;
+      }
+
+      // Mark this button as processing
+      this.processingButtons.add(variantId);
+
+      // Update button state to loading
+      const originalText = button.textContent;
+      button.disabled = true;
+      button.classList.add('loading');
+      button.textContent = window.productTranslations.adding;
+
+      try {
+        // First, get current cart to check if item already exists
+        const cartResponse = await fetch('/cart.js');
+        const cart = await cartResponse.json();
+
+        // Find if this variant is already in cart
+        const existingItem = cart.items.find(item => item.variant_id === parseInt(variantId));
+
+        let response;
+        if (existingItem) {
+          // Item exists, increment quantity using change endpoint
+          response = await fetch('/cart/change.js', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              id: variantId,
+              quantity: existingItem.quantity + 1
+            })
+          });
+        } else {
+          // Item doesn't exist, add it
+          response = await fetch('/cart/add.js', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              items: [{
+                id: parseInt(variantId),
+                quantity: 1
+              }]
+            })
+          });
+        }
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('[Cart] Failed to add variant:', {
+            variantId,
+            status: response.status,
+            error: errorData
+          });
+          throw new Error(errorData.description || errorData.message || 'Failed to add to cart');
+        }
+
+        const data = await response.json();
+        console.log('[Cart] Successfully added variant:', variantId);
+
+        // Show success feedback
+        button.classList.remove('loading');
+        button.classList.add('added');
+        button.textContent = window.productTranslations.added;
+
+        // Update cart count in header
+        updateCartCount();
+
+        // Trigger cart update event for cart drawer/icon
+        document.documentElement.dispatchEvent(new CustomEvent('cart:refresh', {
+          bubbles: true
+        }));
+
+        // Reset button after 2 seconds
+        setTimeout(() => {
+          button.classList.remove('added');
+          button.textContent = originalText;
+          button.disabled = false;
+          // Remove from processing set
+          this.processingButtons.delete(variantId);
+        }, 2000);
+
+      } catch (error) {
+        console.error('[Cart] Error adding variant to cart:', {
+          variantId,
+          error: error.message
+        });
+
+        // Show error feedback
+        button.classList.remove('loading');
+
+        // Check for specific error messages
+        const errorMessage = error.message.toLowerCase();
+        if (errorMessage.includes('availability') || errorMessage.includes('stock') || errorMessage.includes('inventory')) {
+          button.textContent = window.productTranslations.noMoreStock;
+        } else if (errorMessage.includes('quantity') || errorMessage.includes('limit') || errorMessage.includes('maximum')) {
+          button.textContent = window.productTranslations.maxQuantity;
+        } else {
+          button.textContent = window.productTranslations.error;
+        }
+
+        // Reset button after 2 seconds
+        setTimeout(() => {
+          button.textContent = originalText;
+          button.disabled = false;
+          // Remove from processing set
+          this.processingButtons.delete(variantId);
+        }, 2000);
+      }
     }
   }
 
@@ -561,9 +885,11 @@
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
       new MegaVariantSelector();
+      new ImageQuickAdd();
     });
   } else {
     new MegaVariantSelector();
+    new ImageQuickAdd();
   }
 {% endjavascript %}
 
