@@ -10,8 +10,24 @@
 <div class="collection-header-image">
   {% if collection.image %}
     {{ collection.image | image_url: width: 1240 | image_tag: alt: collection.title }}
+  {% else %}
+    <div class="collection-header-image__placeholder"></div>
   {% endif %}
 </div>
+<!-- add a link to the parent collection if it exists -->
+{% if collection.metafields.custom.parent_collection.value %}
+  <div class="parent-collection-link">
+    <a href="{{ collection.metafields.custom.parent_collection.value.url }}">
+      ← {{ collection.metafields.custom.parent_collection.value.title }}
+    </a>
+  </div>
+{% else %}
+  <div class="parent-collection-link">
+    <a href="/collections">
+      ← {{ 'collections.all_collections' | t }}
+    </a>
+  </div>
+{% endif %}
 
 <h1>{{ collection.title }}</h1>
 <p>{{ collection.description }}</p>
@@ -31,6 +47,8 @@
 <div class="collection-products">
   {% paginate collection.products by 20 %}
     {% for product in collection.products %}
+      {% comment %} Skip products that are unavailable and not set to continue selling {% endcomment %}
+      {% unless product.available == false and product.selected_or_first_available_variant.inventory_policy != 'continue' %}
       <div class="product-card">
         {% if product.featured_image %}
           <a href="{{ product.url }}" class="product-card__image">
@@ -46,6 +64,7 @@
           <p class="product-card__price">{{ product.price | money }}</p>
         </div>
       </div>
+      {% endunless %}
     {% endfor %}
 
     <div class="pagination-wrapper">
@@ -72,13 +91,37 @@
     height: 100%;
     object-fit: cover;
   }
+
+  .collection-header-image__placeholder {
+    width: 100%;
+    height: 100%;
+    background: #f5f5f5;
+  }
   .collection h1 {
-    font-size: 4rem;
+    font-size: 68px;
     margin: 2rem auto 0 auto;
   }
   .collection p {
     font-size: 1rem;
     margin: 0 auto 2rem auto;
+  }
+  .parent-collection-link {
+    max-width: 1240px;
+    margin: 20px auto 10px auto;
+  }
+  .parent-collection-link a {
+    display: inline-block;
+    padding: 8px 12px;
+    text-decoration: none;
+    color: #333;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    font-weight: bold;
+    transition: color 0.3s ease;
+  }
+  .parent-collection-link a:hover {
+    color: #000;
+    text-decoration: underline;
   }
   .collection-products {
     display: grid;
@@ -87,6 +130,21 @@
     width: 100%;
     max-width: 1240px;
     margin: 0 auto;
+  }
+  .subcollections {
+   margin: 30px 0px;
+  }
+  .subcollections a {
+    display: flex-box;
+    width: fit-content;
+    padding: 10px;
+    border: 1px solid #ccc;
+    text-decoration: none;
+    color: #333;
+    transition: background-color 0.3s ease;
+  }
+  .subcollections a:hover {
+    background-color: #f5f5f5;
   }
 
   @media (max-width: 1024px) {
@@ -140,6 +198,7 @@
   .product-card__content h3 {
     font-size: 1rem;
     margin-bottom: 0.5rem;
+    height: 42px;
   }
 
   .product-card__content h3 a {

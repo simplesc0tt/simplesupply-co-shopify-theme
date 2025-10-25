@@ -4,7 +4,7 @@
 
   https://shopify.dev/docs/storefronts/themes/architecture/templates/collection
 {% endcomment %}
-
+<section class="collections">
 <h1>{{ 'collections.title' | t }}</h1>
 
 <div
@@ -21,24 +21,30 @@
           height: 600,
           crop: 'center'
         %}
+      {% else %}
+        <div class="collection-card__image collection-card__image--placeholder"></div>
       {% endif %}
 
       <div class="collection-card__content">
         <p>{{ collection.title }}</p>
-
-        {% if collection.description %}
-          <p>{{ collection.description | strip_html | truncatewords: 15 }}</p>
-        {% endif %}
       </div>
     </a>
   {% endfor %}
 </div>
-
+</section>
 {% stylesheet %}
   .collections {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(var(--collection-card-size), 100%), 1fr));
     gap: var(--grid-gap);
+    margin-bottom: 48px;
+
+  }
+
+  .collections h1 {
+    font-size: 68px;
+    margin-top: 48px;
+    margin-bottom: 28px;
   }
   .collections--compact {
     --collection-card-size: 160px;
@@ -50,6 +56,13 @@
     display: flex;
     flex-direction: column;
     width: 100%;
+  }
+  .collection-card__image {
+    aspect-ratio: 1 / 1;
+    width: 100%;
+  }
+  .collection-card__image--placeholder {
+    background: #f5f5f5;
   }
 {% endstylesheet %}
 

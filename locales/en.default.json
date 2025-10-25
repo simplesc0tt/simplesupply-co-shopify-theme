@@ -28,7 +28,8 @@
     }
   },
   "collections": {
-    "title": "Collections"
+    "title": "Collections",
+    "all_collections": "All Collections"
   },
   "gift_card": {
     "add_to_apple_wallet": "Add to Apple Wallet",
