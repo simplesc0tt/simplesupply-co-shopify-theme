@@ -15,55 +15,33 @@
 {% endcomment %}
 
 <div class="product-featured-image" id="productFeaturedImage">
-  {% if product.images.first %}
+  {% if product.metafields.custom.feature_image.value != blank %}
+    {{ product.metafields.custom.feature_image.value | image_url: width: 1400 | image_tag }}
+  {% elsif section.settings.featured_image != blank %}
+    {{ section.settings.featured_image | image_url: width: 1400 | image_tag }}
+  {% elsif product.images.first %}
     {{ product.images.first | image_url: width: 1400 | image_tag }}
-    {% assign featured_variant_name = '' %}
-    {% for variant in product.variants %}
-      {% if variant.featured_image.id == product.images.first.id %}
-        {% assign featured_variant_name = variant.title %}
-        {% break %}
-      {% endif %}
-    {% endfor %}
-
-    {% if featured_variant_name != blank %}
-      <div class="product-image__label">{{ featured_variant_name }}</div>
-    {% endif %}
   {% endif %}
 </div>
 
 <div class="product-page">
   <div class="product-page__images" id="variantImages">
-    {% comment %} Show all product images on initial load (except first/hero image) {% endcomment %}
-    {% for image in product.images %}
-      {% unless forloop.first %}
-        {% comment %} Find which variant this image belongs to {% endcomment %}
-        {% assign image_variant_name = '' %}
-        {% assign image_variant_id = '' %}
-        {% assign image_variant_available = false %}
-        {% for variant in product.variants %}
-          {% if variant.featured_image.id == image.id %}
-            {% assign image_variant_name = variant.title %}
-            {% assign image_variant_id = variant.id %}
-            {% assign image_variant_available = variant.available %}
-            {% break %}
-          {% endif %}
-        {% endfor %}
-
-        <div class="product-image" data-variant-image="{{ image.id }}" data-variant-id="{{ image_variant_id }}">
-          {{ image | image_url: width: 800 | image_tag }}
-          {% if image_variant_name != blank %}
-            <div class="product-image__label">
-              {{ image_variant_name }}
-            </div>
-            {% if image_variant_available %}
-              <button class="product-image__quick-add" data-variant-id="{{ image_variant_id }}">
+    {% comment %} Show all variant images in variant order (paginated to handle 50+ variants) {% endcomment %}
+    {% paginate product.variants by 250 %}
+      {% for variant in product.variants %}
+        {% if variant.featured_image %}
+          <div class="product-image" data-variant-image="{{ variant.featured_image.id }}" data-variant-id="{{ variant.id }}">
+            {{ variant.featured_image | image_url: width: 800 | image_tag }}
+            <div class="product-image__label">{{ variant.title }}</div>
+            {% if variant.available %}
+              <button class="product-image__quick-add" data-variant-id="{{ variant.id }}">
                 {{ 'products.quick_add' | t }}
               </button>
             {% endif %}
-          {% endif %}
-        </div>
-      {% endunless %}
-    {% endfor %}
+          </div>
+        {% endif %}
+      {% endfor %}
+    {% endpaginate %}
   </div>
 
   <div class="product-page__info">
@@ -123,6 +101,7 @@
 </div>
 
 {% render 'related-products', product: product %}
+
 
 {% comment %} Store variant data for JavaScript {% endcomment %}
 <script>
@@ -569,6 +548,7 @@
       // Add metafield images if they exist
       if (variant.metafieldImages && variant.metafieldImages.length > 0) {
         variant.metafieldImages.forEach(image => {
+          if (image.id === variant.featuredImageId) return;
           this.renderImage(image, variant.title, variantId);
         });
       }
@@ -896,7 +876,14 @@
 {% schema %}
 {
   "name": "t:sections.product_mega_variant.name",
-  "settings": [],
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "featured_image",
+      "label": "Featured image",
+      "info": "Lifestyle or hero image shown at the top. Falls back to first product image if not set."
+    }
+  ],
   "disabled_on": {
     "groups": ["header", "footer"]
   }
