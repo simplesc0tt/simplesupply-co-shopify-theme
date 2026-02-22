@@ -29,9 +29,14 @@
     {% comment %} Show all variant images in variant order (paginated to handle 50+ variants) {% endcomment %}
     {% paginate product.variants by 250 %}
       {% for variant in product.variants %}
-        {% if variant.featured_image %}
-          <div class="product-image" data-variant-image="{{ variant.featured_image.id }}" data-variant-id="{{ variant.id }}">
-            {{ variant.featured_image | image_url: width: 800 | image_tag }}
+        {% assign variant_img = variant.metafields.custom.variant_image.value %}
+        {% if variant.featured_image or variant_img %}
+          <div class="product-image" data-variant-image="{{ variant.featured_image.id | default: variant_img.id }}" data-variant-id="{{ variant.id }}">
+            {% if variant.featured_image %}
+              {{ variant.featured_image | image_url: width: 800 | image_tag }}
+            {% elsif variant_img %}
+              {{ variant_img | image_url: width: 800 | image_tag }}
+            {% endif %}
             <div class="product-image__label">{{ variant.title }}</div>
             {% if variant.available %}
               <button class="product-image__quick-add" data-variant-id="{{ variant.id }}">
@@ -39,6 +44,7 @@
               </button>
             {% endif %}
           </div>
+
         {% endif %}
       {% endfor %}
     {% endpaginate %}
@@ -73,6 +79,13 @@
                     {% endif %}
                   {% endfor %}
                 </select>
+                <button type="button" class="variant-search-toggle" id="variantSearchToggle" aria-label="Search variants">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </button>
+              </div>
+              <div class="variant-search-container hidden" id="variantSearchContainer">
+                <input type="text" class="variant-search-input" id="variantSearchInput" placeholder="Search colors..." autocomplete="off">
+                <div class="variant-search-results" id="variantSearchResults"></div>
               </div>
             </div>
           {% else %}
@@ -109,10 +122,15 @@
     {% for variant in product.variants %}
       "{{ variant.id }}": {
         id: {{ variant.id }},
-        title: "{{ variant.title | escape }}",
+        title: {{ variant.title | json }},
         price: "{{ variant.price | money }}",
         available: {{ variant.available }},
         featuredImageId: {{ variant.featured_image.id | json }},
+        {% assign vi = variant.metafields.custom.variant_image.value %}
+        variantImageUrl: {% if vi %}"{{ vi | image_url: width: 800 }}"{% else %}null{% endif %},
+        variantImageAlt: {% if vi %}"{{ variant.title | escape }}"{% else %}null{% endif %},
+        {% assign vs = variant.metafields.custom.variant_swatch.value %}
+        variantSwatchUrl: {% if vs %}"{{ vs | image_url: width: 800 }}"{% else %}null{% endif %},
         {% comment %} Get variant image IDs from metaobject reference {% endcomment %}
         imageIds: [
           {% if variant.featured_image.id %}
@@ -136,9 +154,9 @@
             {% endfor %}
           {% endif %}
         ],
-        option1: "{{ variant.option1 | escape }}",
-        option2: "{{ variant.option2 | escape }}",
-        option3: "{{ variant.option3 | escape }}"
+        option1: {{ variant.option1 | json }},
+        option2: {{ variant.option2 | json }},
+        option3: {{ variant.option3 | json }}
       }{% unless forloop.last %},{% endunless %}
     {% endfor %}
   };
@@ -298,6 +316,102 @@
 
   .mega-variant-select-wrapper {
     position: relative;
+    display: flex;
+    gap: 0;
+  }
+
+  .mega-variant-select-wrapper .mega-variant-select {
+    flex: 1;
+    border-right: none;
+  }
+
+  .variant-search-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    border: 1px solid #000;
+    background: #fff;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .variant-search-toggle:hover {
+    background: #000;
+    color: #fff;
+  }
+
+  .variant-search-toggle.active {
+    background: #000;
+    color: #fff;
+  }
+
+  .variant-search-container {
+    position: relative;
+    margin-top: 4px;
+  }
+
+  .variant-search-container.hidden {
+    display: none;
+  }
+
+  .variant-search-input {
+    width: 100%;
+    padding: 0.5rem 0;
+    border: none;
+    border-bottom: 1px solid #ccc;
+    border-radius: 0;
+    -webkit-appearance: none;
+    font-size: 0.875rem;
+    font-family: inherit;
+    text-transform: uppercase;
+    background: transparent;
+    box-sizing: border-box;
+  }
+
+  .variant-search-input:focus {
+    outline: none;
+    border-bottom: 1px solid #999;
+  }
+
+  .variant-search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: 300px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #000;
+    border-top: none;
+    z-index: 100;
+    display: none;
+  }
+
+  .variant-search-results.open {
+    display: block;
+  }
+
+  .variant-search-result {
+    padding: 0.625rem 0.75rem;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+  }
+
+  .variant-search-result:last-child {
+    border-bottom: none;
+  }
+
+  .variant-search-result:hover {
+    background: #f5f5f5;
+  }
+
+  .variant-search-result .result-price {
+    color: #666;
+    margin-left: 0.5rem;
   }
 
   .mega-variant-select {
@@ -404,6 +518,11 @@
       this.allProductImages = this.getAllProductImages();
       this.processingButtons = new Set(); // Track which buttons are currently processing
 
+      this.searchToggle = document.getElementById('variantSearchToggle');
+      this.searchContainer = document.getElementById('variantSearchContainer');
+      this.searchInput = document.getElementById('variantSearchInput');
+      this.searchResults = document.getElementById('variantSearchResults');
+
       if (this.variantSelect) {
         this.init();
       }
@@ -426,6 +545,24 @@
     init() {
       this.variantSelect.addEventListener('change', (e) => {
         this.handleVariantChange(e.target.value);
+      });
+
+      // Search toggle
+      if (this.searchToggle) {
+        this.searchToggle.addEventListener('click', () => this.toggleSearch());
+      }
+      if (this.searchInput) {
+        this.searchInput.addEventListener('input', () => this.handleSearch());
+        this.searchInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') this.closeSearch();
+        });
+      }
+      // Close search when clicking outside
+      document.addEventListener('click', (e) => {
+        if (this.searchContainer && !this.searchContainer.contains(e.target) &&
+            !this.searchToggle.contains(e.target)) {
+          this.closeSearch();
+        }
       });
 
       // Check if a variant is already selected (e.g., browser back button)
@@ -487,6 +624,58 @@
       this.swapVariantImages(variantId);
     }
 
+    toggleSearch() {
+      if (!this.searchContainer) return;
+      const isHidden = this.searchContainer.classList.contains('hidden');
+      if (isHidden) {
+        this.searchContainer.classList.remove('hidden');
+        this.searchToggle.classList.add('active');
+        this.searchInput.value = '';
+        this.searchInput.focus();
+        this.searchResults.classList.remove('open');
+      } else {
+        this.closeSearch();
+      }
+    }
+
+    closeSearch() {
+      if (!this.searchContainer) return;
+      this.searchContainer.classList.add('hidden');
+      this.searchToggle.classList.remove('active');
+      this.searchResults.classList.remove('open');
+    }
+
+    handleSearch() {
+      const query = this.searchInput.value.trim().toLowerCase();
+      if (!query) {
+        this.searchResults.classList.remove('open');
+        return;
+      }
+
+      this.searchResults.innerHTML = '';
+      const variants = window.productVariants;
+      let count = 0;
+
+      for (const [id, v] of Object.entries(variants)) {
+        if (!v.available) continue;
+        if (v.title.toLowerCase().includes(query)) {
+          const div = document.createElement('div');
+          div.className = 'variant-search-result';
+          div.innerHTML = `${v.title} <span class="result-price">${v.price}</span>`;
+          div.addEventListener('click', () => {
+            this.variantSelect.value = id;
+            this.handleVariantChange(id);
+            this.closeSearch();
+          });
+          this.searchResults.appendChild(div);
+          count++;
+          if (count >= 20) break;
+        }
+      }
+
+      this.searchResults.classList.toggle('open', count > 0);
+    }
+
     resetToAllImages() {
       // Show "Select a color" and hide "See all colors" option
       if (this.selectColorOption) {
@@ -543,6 +732,20 @@
         if (featuredImage) {
           this.renderImage(featuredImage, variant.title, variantId);
         }
+      } else if (variant.variantImageUrl) {
+        // Fallback to variant_image metafield (file_reference)
+        this.renderImage({
+          url: variant.variantImageUrl,
+          alt: variant.variantImageAlt || variant.title
+        }, variant.title, variantId);
+      }
+
+      // Add swatch image from variant_swatch metafield
+      if (variant.variantSwatchUrl) {
+        this.renderImage({
+          url: variant.variantSwatchUrl,
+          alt: (variant.variantImageAlt || variant.title) + ' swatch'
+        }, variant.title, variantId);
       }
 
       // Add metafield images if they exist
